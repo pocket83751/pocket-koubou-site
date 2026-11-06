@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="color-scheme" content="light dark" />
+<link rel="icon" href="data:," />
+<title>ミニゲームデモ3本</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800;900&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f1ea; --bg2:#e9e2d2; --panel:#fffdf8; --panel2:#ffffff;
+    --ink:#1d1a15; --muted:#6f675a; --line:#ddd3c0;
+    --amber:#e9a426; --amber-deep:#b8770a; --amber-soft:#fdf0d2;
+    --teal:#0f766e; --teal-deep:#0a5c56; --teal-soft:#d9efec;
+    --coral:#e14d3a; --coral-deep:#b93424; --coral-soft:#fde3de;
+    --navy:#22304a;
+    --shadow:0 10px 30px rgba(50,38,10,.12);
+    --radius:18px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#171512; --bg2:#100f0d; --panel:#23201b; --panel2:#2a2721;
+      --ink:#f3ede0; --muted:#b8ad9a; --line:#3d382f;
+      --amber-soft:#3a2f14; --teal-soft:#14332f; --coral-soft:#3a201c;
+      --shadow:0 12px 32px rgba(0,0,0,.45);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  h1,h2,h3,.rounded{font-family:"M PLUS Rounded 1c","Noto Sans JP",sans-serif}
+  button{font:inherit;cursor:pointer}
+  .wrap{max-width:1080px;margin:0 auto;padding:22px 16px 48px}
+
+  /* ===== Hero ===== */
+  .hero{padding:10px 2px 4px}
+  .hero-top{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:14px}
+  .chip{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:800;letter-spacing:.04em;padding:6px 11px;border-radius:999px;border:1.5px solid var(--ink);background:var(--panel)}
+  .chip i{width:8px;height:8px;border-radius:50%;background:#35b558;display:inline-block;box-shadow:0 0 0 4px rgba(53,181,88,.18)}
+  .hero h1{font-size:clamp(34px,6vw,58px);line-height:1.05;margin:6px 0 12px;font-weight:900;letter-spacing:-.01em}
+  .hero h1 span{color:var(--amber-deep)}
+  @media(prefers-color-scheme:dark){.hero h1 span{color:var(--amber)}}
+  .hero p{font-size:16px;line-height:1.85;color:var(--muted);max-width:720px;margin:0}
+  .hero p strong{color:var(--ink)}
+  .hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .hero-meta span{font-size:13px;font-weight:700;background:var(--panel);border:1px solid var(--line);padding:8px 12px;border-radius:999px}
+
+  /* ===== Game selector ===== */
+  .selector{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:26px 0 16px}
+  @media(max-width:720px){.selector{grid-template-columns:1fr}}
+  .sel-card{text-align:left;border:2px solid var(--line);background:var(--panel);border-radius:var(--radius);padding:16px;display:flex;gap:14px;align-items:flex-start;transition:.18s;width:100%}
+  .sel-card:hover{transform:translateY(-2px);border-color:var(--ink)}
+  .sel-card.active{border-color:var(--ink);box-shadow:var(--shadow);background:var(--panel2)}
+  .sel-ico{width:52px;height:52px;flex:0 0 52px;border-radius:14px;display:grid;place-items:center;font-size:26px}
+  .sel-ico.amber{background:var(--amber-soft);border:1.5px solid #e9c87a}
+  .sel-ico.teal{background:var(--teal-soft);border:1.5px solid #7fc9c0}
+  .sel-ico.coral{background:var(--coral-soft);border:1.5px solid #f0a195}
+  .sel-card h3{margin:2px 0 4px;font-size:17px}
+  .sel-card p{margin:0;font-size:13px;line-height:1.6;color:var(--muted)}
+  .sel-tag{font-size:11px;font-weight:900;letter-spacing:.06em}
+  .tag-amber{color:var(--amber-deep)} .tag-teal{color:var(--teal)} .tag-coral{color:var(--coral-deep)}
+  @media(prefers-color-scheme:dark){.tag-amber{color:var(--amber)}.tag-coral{color:#ff9a8a}}
+
+  /* ===== Stage ===== */
+  .stage{background:var(--panel);border:1.5px solid var(--line);border-radius:24px;box-shadow:var(--shadow);overflow:hidden}
+  .panel{display:none}
+  .panel.active{display:block}
+  .panel-head{padding:20px 20px 0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:flex-start}
+  .panel-head h2{margin:0;font-size:24px}
+  .panel-head .sub{color:var(--muted);font-size:14px;line-height:1.7;margin:6px 0 0;max-width:560px}
+  .badge{font-size:12px;font-weight:900;padding:7px 11px;border-radius:999px;white-space:nowrap}
+  .badge-amber{background:var(--amber-soft);color:var(--amber-deep);border:1px solid #e9c87a}
+  .badge-teal{background:var(--teal-soft);color:var(--teal-deep);border:1px solid #7fc9c0}
+  .badge-coral{background:var(--coral-soft);color:var(--coral-deep);border:1px solid #f0a195}
+  @media(prefers-color-scheme:dark){.badge-amber{color:var(--amber)}.badge-teal{color:#6fd6cb}.badge-coral{color:#ff9a8a}}
+  .panel-body{padding:18px 20px 22px}
+  .grid2{display:grid;grid-template-columns:1.25fr .85fr;gap:18px}
+  @media(max-width:820px){.grid2{grid-template-columns:1fr}}
+  .box{border:1.5px solid var(--line);border-radius:16px;padding:16px;background:var(--panel2)}
+  .box h4{margin:0 0 10px;font-size:13px;letter-spacing:.05em}
+  .box ul{margin:0;padding-left:18px;line-height:1.9;font-size:14px;color:var(--muted)}
+  .box ul b{color:var(--ink)}
+  .stat-row{display:flex;gap:10px;flex-wrap:wrap}
+  .stat{flex:1;min-width:100px;background:var(--panel2);border:1.5px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+  .stat small{display:block;font-size:11px;font-weight:800;letter-spacing:.05em;color:var(--muted)}
+  .stat strong{font-size:24px;font-family:"M PLUS Rounded 1c",sans-serif}
+  .btn{border:2px solid var(--ink);background:var(--ink);color:#fff;font-weight:900;border-radius:999px;padding:11px 20px;font-size:15px}
+  .btn:active{transform:scale(.97)}
+  .btn.ghost{background:transparent;color:var(--ink)}
+  .btn:disabled{opacity:.4;cursor:not-allowed}
+  .btn-amber{background:var(--amber-deep);border-color:var(--amber-deep)}
+  .btn-teal{background:var(--teal);border-color:var(--teal)}
+  .btn-coral{background:var(--coral);border-color:var(--coral)}
+
+  /* --- Idle game --- */
+  .coin-zone{display:flex;flex-direction:column;align-items:center;padding:10px 0 4px;position:relative}
+  .coin-btn{width:172px;height:172px;border-radius:50%;border:6px solid #c98f0a;background:radial-gradient(circle at 35% 30%,#ffe89a,#f7c948 55%,#e9a426);color:#7a5200;font-family:"M PLUS Rounded 1c",sans-serif;font-weight:900;font-size:22px;box-shadow:0 12px 0 #b8770a,0 20px 30px rgba(0,0,0,.18);transition:transform .07s;position:relative;touch-action:manipulation}
+  .coin-btn:active{transform:translateY(6px) scale(.98);box-shadow:0 6px 0 #b8770a}
+  .coin-btn small{display:block;font-size:13px;font-weight:800}
+  .float-num{position:absolute;font-family:"M PLUS Rounded 1c",sans-serif;font-weight:900;color:var(--amber-deep);pointer-events:none;animation:floatUp .8s ease-out forwards;font-size:20px;z-index:3}
+  @keyframes floatUp{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-56px)}}
+  .progress{height:14px;background:var(--bg2);border-radius:999px;overflow:hidden;border:1px solid var(--line);margin-top:14px}
+  .progress i{display:block;height:100%;background:var(--amber);width:0%;transition:width .25s}
+  .shop{display:grid;gap:10px}
+  .shop-item{display:flex;justify-content:space-between;align-items:center;gap:10px;border:1.5px solid var(--line);border-radius:14px;padding:12px;background:var(--panel2)}
+  .shop-item h5{margin:0;font-size:15px}
+  .shop-item p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+  .shop-buy{flex:0 0 auto;text-align:right}
+  .shop-buy button{border-radius:999px;border:2px solid var(--amber-deep);background:var(--amber);color:#4a3200;font-weight:900;padding:8px 13px;font-size:13px}
+  .shop-buy button:disabled{opacity:.35;cursor:not-allowed}
+  .owned{font-size:12px;font-weight:800;color:var(--muted);margin-top:4px}
+
+  /* --- Puzzle --- */
+  .puzzle-board{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:340px;margin:6px auto}
+  .tile{aspect-ratio:1;border:none;border-radius:14px;font-family:"M PLUS Rounded 1c",sans-serif;font-size:34px;font-weight:900;background:var(--teal);color:#fff;box-shadow:0 5px 0 var(--teal-deep);transition:.12s;touch-action:manipulation}
+  .tile:active{transform:scale(.96)}
+  .tile.empty{background:transparent;box-shadow:none;cursor:default}
+  .tile.correct{background:#2a9d8f}
+  .puzzle-fig{display:flex;justify-content:center;gap:6px;margin-top:8px}
+  .puzzle-fig span{width:26px;height:26px;border-radius:7px;background:var(--teal-soft);border:1px solid #7fc9c0;display:grid;place-items:center;font-size:12px;font-weight:900;color:var(--teal-deep)}
+  .win-banner{display:none;margin-top:14px;background:var(--teal-soft);border:1.5px solid #7fc9c0;border-radius:14px;padding:14px;text-align:center;font-weight:900}
+  .win-banner.show{display:block}
+
+  /* --- Reflex --- */
+  .reflex-board{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:360px;margin:6px auto}
+  .hole{aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 50% 62%,#4a3a26 0 46%,#6b5436 47% 62%,transparent 63%),var(--bg2);border:1.5px solid var(--line);position:relative;overflow:hidden;display:grid;place-items:center}
+  .target{width:72%;height:72%;border:none;background:transparent;display:none;place-items:center;padding:0;touch-action:manipulation}
+  .target.show{display:grid;animation:pop .18s ease-out}
+  .target svg{width:100%;height:100%;filter:drop-shadow(0 4px 6px rgba(0,0,0,.25))}
+  @keyframes pop{from{transform:translateY(18px) scale(.6)}to{transform:translateY(0) scale(1)}}
+  .timerbar{height:12px;background:var(--bg2);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .timerbar i{display:block;height:100%;background:var(--coral);width:100%}
+  .result-box{display:none;margin-top:14px;background:var(--coral-soft);border:1.5px solid #f0a195;border-radius:14px;padding:16px;text-align:center}
+  .result-box.show{display:block}
+  .result-box .rank{font-family:"M PLUS Rounded 1c",sans-serif;font-size:40px;font-weight:900;line-height:1}
+
+  /* ===== Bottom info ===== */
+  .use-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+  @media(max-width:720px){.use-grid{grid-template-columns:1fr}}
+  .use-card{background:var(--panel);border:1.5px solid var(--line);border-radius:var(--radius);padding:16px}
+  .use-card h3{margin:0 0 8px;font-size:16px}
+  .use-card p{margin:0;font-size:13.5px;line-height:1.8;color:var(--muted)}
+  .foot{margin-top:22px;background:var(--navy);color:#eef1f7;border-radius:20px;padding:20px}
+  .foot h2{margin:0 0 8px;font-size:20px;color:#fff}
+  .foot p{margin:0;line-height:1.85;font-size:14px;color:#c7d0e0}
+  .foot p+p{margin-top:8px}
+  .foot strong{color:#fff}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="hero-top">
+      <span class="chip"><i></i> 全ゲーム動作中 ・ ブラウザでそのまま遊べます</span>
+      <span class="chip">インストール不要</span>
+    </div>
+    <h1>ミニゲーム<br>デモ <span>3本</span></h1>
+    <p>ジャンルの違う3本を、実際に触って遊べるデモとして用意しました。<strong>放置系・パズル・反射系</strong>——それぞれ「長く遊ばせる仕組み」「頭を使う気持ちよさ」「一瞬の判断の楽しさ」が核になっています。下のカードから切り替えて、そのままプレイできます。</p>
+    <div class="hero-meta">
+      <span>⏱ 1本あたり 30秒〜3分</span>
+      <span>📱 スマホ / PC 両対応</span>
+      <span>👆 タップだけの簡単操作</span>
+      <span>🔁 何度でもリプレイ可能</span>
+    </div>
+  </header>
+
+  <!-- SELECTOR -->
+  <nav class="selector" aria-label="ゲーム選択">
+    <button class="sel-card active" data-target="game-idle">
+      <div class="sel-ico amber">🪙</div>
+      <div><div class="sel-tag tag-amber">01 ・ 放置 / クリッカー</div><h3>コイン工場タイクーン</h3><p>タップで稼いで、設備を買って、自動で増える。放置ゲームの基本ループを凝縮。</p></div>
+    </button>
+    <button class="sel-card" data-target="game-puzzle">
+      <div class="sel-ico teal">🧩</div>
+      <div><div class="sel-tag tag-teal">02 ・ パズル</div><h3>スライドパズル 1–8</h3><p>バラバラの数字を順番に並べ替える定番パズル。手数とタイムで腕が分かれる。</p></div>
+    </button>
+    <button class="sel-card" data-target="game-reflex">
+      <div class="sel-ico coral">⭐</div>
+      <div><div class="sel-tag tag-coral">03 ・ 反射 / アクション</div><h3>スターキャッチ30</h3><p>30秒間、出てきた星をひたすらタップ。金色の星は3点、コンボでスコアが伸びる。</p></div>
+    </button>
+  </nav>
+
+  <!-- STAGE -->
+  <section class="stage">
+
+    <!-- ========== GAME 1 : IDLE ========== -->
+    <article class="panel active" id="game-idle">
+      <div class="panel-head">
+        <div><h2>🪙 コイン工場タイクーン</h2><p class="sub">大きなコインをタップして稼ぎ、ショップで設備を買うと自動でコインが増えていきます。まずは <b>1,000コイン</b> を目指してください。放っておいても増えるのが放置ゲームの醍醐味です。</p></div>
+        <span class="badge badge-amber">放置系 ・ 育成ループ型</span>
+      </div>
+      <div class="panel-body">
+        <div class="stat-row" style="margin-bottom:14px">
+          <div class="stat"><small>所持コイン</small><strong id="idle-coins">0</strong></div>
+          <div class="stat"><small>1タップ</small><strong id="idle-perclick">+1</strong></div>
+          <div class="stat"><small>毎秒 自動</small><strong id="idle-persec">0</strong></div>
+          <div class="stat"><small>累計タップ</small><strong id="idle-taps">0</strong></div>
+        </div>
+        <div class="grid2">
+          <div class="box">
+            <div class="coin-zone" id="coin-zone">
+              <button class="coin-btn" id="coin-btn" aria-label="コインをタップ">¥<small>タップで稼ぐ</small></button>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;color:var(--muted);margin-top:16px"><span>次の目標：1,000コイン</span><span id="idle-goal-label">0 / 1,000</span></div>
+            <div class="progress"><i id="idle-progress"></i></div>
+            <p id="idle-message" style="text-align:center;font-weight:900;margin:14px 0 0;min-height:24px">コインをタップしてスタート！</p>
+            <div style="text-align:center;margin-top:10px"><button class="btn ghost" id="idle-reset">最初からやり直す</button></div>
+          </div>
+          <div>
+            <div class="box" style="margin-bottom:12px">
+              <h4>🏭 ショップ — 買うほど自動で増える</h4>
+              <div class="shop" id="shop-list"></div>
+            </div>
+            <div class="box">
+              <h4>遊び方・仕組み</h4>
+              <ul>
+                <li><b>タップ → 稼ぐ → 設備を買う → 自動化</b> の4拍子が基本ループ</li>
+                <li>設備は買うたびに価格が上がる（約1.55倍）ので、順番選びが攻略になる</li>
+                <li>広告視聴や課金ガチャは入れず、<b>純粋に「増える気持ちよさ」</b>だけを残した設計</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========== GAME 2 : PUZZLE ========== -->
+    <article class="panel" id="game-puzzle">
+      <div class="panel-head">
+        <div><h2>🧩 スライドパズル 1–8</h2><p class="sub">空きマスの隣にあるタイルをタップするとスライドします。<b>1→2→3…→8</b> の順に並べればクリア。少ない手数・短いタイムを目指してください。</p></div>
+        <span class="badge badge-teal">パズル ・ 思考型</span>
+      </div>
+      <div class="panel-body">
+        <div class="stat-row" style="margin-bottom:14px">
+          <div class="stat"><small>手数</small><strong id="pz-moves">0</strong></div>
+          <div class="stat"><small>タイム</small><strong id="pz-time">0:00</strong></div>
+          <div class="stat"><small>ベスト（最少手数）</small><strong id="pz-best">—</strong></div>
+        </div>
+        <div class="grid2">
+          <div class="box">
+            <div class="puzzle-board" id="pz-board"></div>
+            <div class="win-banner" id="pz-win">🎉 クリア！ <span id="pz-win-detail"></span></div>
+            <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap">
+              <button class="btn btn-teal" id="pz-shuffle">シャッフルして開始</button>
+              <button class="btn ghost" id="pz-solve">完成形を見る</button>
+            </div>
+            <p style="text-align:center;font-size:12px;color:var(--muted);margin:10px 0 0">完成形はこちら ↓</p>
+            <div class="puzzle-fig"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span style="background:transparent">・</span></div>
+          </div>
+          <div class="box">
+            <h4>遊び方・コツ</h4>
+            <ul>
+              <li>まずは<b>上の段（1・2・3）</b>をそろえるのが定石</li>
+              <li>最後の2マスは、回り込むように動かすと崩さずにハマる</li>
+              <li>シャッフルは「完成形からランダムに動かす」方式なので、<b>必ず解ける配置</b>しか出ません</li>
+              <li>手数 <b>60手以内</b> が上級者ライン、30手台はかなりの腕前です</li>
+            </ul>
+            <h4 style="margin-top:16px">このジャンルの使いどころ</h4>
+            <ul>
+              <li>待ち時間に遊べる<b>店舗・サービスの販促ミニゲーム</b></li>
+              <li>クリアタイムを競う<b>SNS企画・キャンペーン</b>への転用</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+
+    <!-- ========== GAME 3 : REFLEX ========== -->
+    <article class="panel" id="game-reflex">
+      <div class="panel-head">
+        <div><h2>⭐ スターキャッチ30</h2><p class="sub">スタートを押すと30秒のカウントダウン開始。穴から顔を出す星をタップしてください。通常の星は <b>1点</b>、たまに出る<b>金色の星は3点</b>。外すとコンボが途切れます。</p></div>
+        <span class="badge badge-coral">反射系 ・ 30秒勝負</span>
+      </div>
+      <div class="panel-body">
+        <div class="stat-row" style="margin-bottom:12px">
+          <div class="stat"><small>スコア</small><strong id="rf-score">0</strong></div>
+          <div class="stat"><small>残り時間</small><strong id="rf-time">30.0</strong></div>
+          <div class="stat"><small>コンボ</small><strong id="rf-combo">×0</strong></div>
+          <div class="stat"><small>ベスト</small><strong id="rf-best">0</strong></div>
+        </div>
+        <div class="timerbar" style="margin-bottom:14px"><i id="rf-bar"></i></div>
+        <div class="grid2">
+          <div class="box">
+            <div class="reflex-board" id="rf-board"></div>
+            <div class="result-box" id="rf-result">
+              <div class="rank" id="rf-rank">S</div>
+              <p style="margin:6px 0 0;font-weight:900" id="rf-result-text"></p>
+              <p style="margin:4px 0 0;font-size:13px;color:var(--muted)">ランク目安： S＝35点以上 ／ A＝28点以上 ／ B＝20点以上 ／ C＝19点以下</p>
+            </div>
+            <div style="text-align:center;margin-top:16px">
+              <button class="btn btn-coral" id="rf-start">▶ スタート（30秒）</button>
+            </div>
+          </div>
+          <div class="box">
+            <h4>遊び方・コツ</h4>
+            <ul>
+              <li>星は後半になるほど<b>出ている時間が短く</b>なります</li>
+              <li>金色の星は出現率 約15%。見えたら最優先でタップ</li>
+              <li>闇雲に連打すると空振りでコンボが消えるので、<b>狙って確実に</b>がコツ</li>
+              <li>視線は画面の中心に置き、周辺視野で星を捉えると反応が速くなります</li>
+            </ul>
+            <h4 style="margin-top:16px">このジャンルの使いどころ</h4>
+            <ul>
+              <li>イベント会場や配信で盛り上がる<b>短時間の対戦・ランキング企画</b></li>
+              <li>スコア画面のシェアで広がる<b>拡散型キャンペーン</b></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <!-- USE CASES -->
+  <div class="use-grid">
+    <div class="use-card"><h3>🪙 放置系の強み</h3><p>「気づいたら増えている」感覚が再訪を生みます。店舗アプリのポイント育成、配信の合間の常駐コンテンツなど、長く触ってもらう仕掛けに向いています。</p></div>
+    <div class="use-card"><h3>🧩 パズルの強み</h3><p>ルール説明がほぼ不要で年齢を問わず遊べます。クリアタイムや手数を競わせると、キャンペーンやSNS企画と相性が良いジャンルです。</p></div>
+    <div class="use-card"><h3>⭐ 反射系の強み</h3><p>30秒で結果が出るので、その場の盛り上がりとシェアに強いタイプ。スコアランキングを付けるとリピート率が上がります。</p></div>
+  </div>
+
+  <footer class="foot">
+    <h2>この3本について</h2>
+    <p>3本とも <strong>ブラウザだけで動く軽量な作り</strong> で、スマホでもPCでも同じように遊べます。キャラクターやテーマ、制限時間、難易度、スコアの仕組みは用途に合わせて差し替え可能です。</p>
+    <p>たとえば「お店のマスコットが出てくる反射ゲーム」「商品名を並べるパズル」「来店で貯まる放置育成」——といった形に置き換えると、そのまま販促や企画用のミニゲームになります。気になる1本があれば、そのジャンルを掘り下げた版を作るのが次のステップです。</p>
+  </footer>
+
+</div>
+
+<script>
+/* ============ Tab switching ============ */
+function showGame(id, el){
+  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('active', p.id===id); });
+  document.querySelectorAll('.sel-card').forEach(function(c){ c.classList.toggle('active', c.dataset.target===id); });
+  document.querySelector('.stage').scrollIntoView({behavior:'smooth', block:'start'});
+}
+document.querySelectorAll('.sel-card').forEach(function(card){
+  card.addEventListener('click', function(){ showGame(card.dataset.target, card); });
+});
+
+/* ============ GAME 1 : IDLE ============ */
+var idle = { coins:0, totalEarned:0, taps:0, perClick:1, goalHit:false };
+var shopItems = [
+  { id:'glove', name:'パワーグローブ', desc:'1タップの稼ぎ +1', base:15, growth:1.55, owned:0, type:'click', value:1, icon:'🧤' },
+  { id:'worker', name:'アルバイト', desc:'毎秒 +1 コイン（自動）', base:50, growth:1.55, owned:0, type:'auto', value:1, icon:'🧑‍🍳' },
+  { id:'machine', name:'コイン製造機', desc:'毎秒 +8 コイン（自動）', base:320, growth:1.6, owned:0, type:'auto', value:8, icon:'⚙️' },
+  { id:'factory', name:'ミニ工場', desc:'毎秒 +45 コイン（自動）', base:1800, growth:1.65, owned:0, type:'auto', value:45, icon:'🏭' },
+  { id:'rocket', name:'広告ロケット', desc:'1タップの稼ぎ +10', base:5000, growth:1.7, owned:0, type:'click', value:10, icon:'🚀' }
+];
+function itemCost(it){ return Math.floor(it.base * Math.pow(it.growth, it.owned)); }
+function perSec(){ return shopItems.reduce(function(s,it){ return s + (it.type==='auto' ? it.value*it.owned : 0); }, 0); }
+function fmt(n){ return Math.floor(n).toLocaleString('ja-JP'); }
+
+function renderShop(){
+  var wrap = document.getElementById('shop-list');
+  wrap.innerHTML = '';
+  shopItems.forEach(function(it){
+    var cost = itemCost(it);
+    var row = document.createElement('div'); row.className='shop-item';
+    var info = document.createElement('div');
+    var h = document.createElement('h5'); h.textContent = it.icon+' '+it.name;
+    var p = document.createElement('p'); p.textContent = it.desc;
+    info.appendChild(h); info.appendChild(p);
+    var buyBox = document.createElement('div'); buyBox.className='shop-buy';
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = '🪙 '+fmt(cost);
+    btn.disabled = idle.coins < cost;
+    (function(itemId){
+      btn.addEventListener('click', function(){ buyItem(itemId); });
+    })(it.id);
+    var owned = document.createElement('div'); owned.className='owned';
+    owned.textContent = '所持：'+it.owned;
+    buyBox.appendChild(btn); buyBox.appendChild(owned);
+    row.appendChild(info); row.appendChild(buyBox);
+    wrap.appendChild(row);
+  });
+}
+function renderIdle(){
+  document.getElementById('idle-coins').textContent = fmt(idle.coins);
+  document.getElementById('idle-perclick').textContent = '+'+fmt(idle.perClick);
+  document.getElementById('idle-persec').textContent = fmt(perSec());
+  document.getElementById('idle-taps').textContent = fmt(idle.taps);
+  var pct = Math.min(100, idle.coins/1000*100);
+  document.getElementById('idle-progress').style.width = pct+'%';
+  document.getElementById('idle-goal-label').textContent = fmt(Math.min(idle.coins,1000))+' / 1,000';
+  renderShop();
+}
+function buyItem(id){
+  var it = shopItems.find(function(x){ return x.id===id; });
+  var cost = itemCost(it);
+  if(idle.coins < cost) return;
+  idle.coins -= cost; it.owned++;
+  if(it.type==='click') idle.perClick += it.value;
+  document.getElementById('idle-message').textContent = it.icon+' '+it.name+' を購入！ '+(it.type==='click' ? 'タップが強くなった' : '自動収入アップ');
+  renderIdle();
+}
+document.getElementById('coin-btn').addEventListener('click', function(e){
+  idle.coins += idle.perClick; idle.totalEarned += idle.perClick; idle.taps++;
+  var zone = document.getElementById('coin-zone');
+  var f = document.createElement('span'); f.className='float-num'; f.textContent = '+'+fmt(idle.perClick);
+  var rect = zone.getBoundingClientRect();
+  f.style.left = (e.clientX - rect.left - 14 + (Math.random()*40-20)) + 'px';
+  f.style.top = (e.clientY - rect.top - 10) + 'px';
+  zone.appendChild(f);
+  setTimeout(function(){ f.remove(); }, 820);
+  if(idle.coins >= 1000 && !idle.goalHit){
+    idle.goalHit = true;
+    document.getElementById('idle-message').textContent = '🎉 目標達成！ 1,000コイン到達。次は工場を建てて10,000を目指そう';
+  }
+  renderIdle();
+});
+setInterval(function(){
+  var ps = perSec();
+  if(ps>0){ idle.coins += ps/10; idle.totalEarned += ps/10; 
+    if(idle.coins>=1000 && !idle.goalHit){ idle.goalHit=true; document.getElementById('idle-message').textContent='🎉 目標達成！ 1,000コイン到達。次は10,000を目指そう'; }
+    renderIdle();
+  }
+}, 100);
+function resetIdle(){
+  idle = { coins:0, totalEarned:0, taps:0, perClick:1, goalHit:false };
+  shopItems.forEach(function(it){ it.owned=0; });
+  document.getElementById('idle-message').textContent = 'コインをタップしてスタート！';
+  renderIdle();
+}
+document.getElementById('idle-reset').addEventListener('click', resetIdle);
+renderIdle();
+
+/* ============ GAME 2 : PUZZLE ============ */
+var pz = { board:[1,2,3,4,5,6,7,8,0], moves:0, seconds:0, timer:null, started:false, best:null, solvedView:false };
+function renderPuzzle(){
+  var b = document.getElementById('pz-board'); b.innerHTML='';
+  pz.board.forEach(function(v,i){
+    var btn = document.createElement('button');
+    btn.className = 'tile' + (v===0 ? ' empty' : '') + (v!==0 && v===i+1 ? ' correct' : '');
+    btn.textContent = v===0 ? '' : v;
+    btn.setAttribute('aria-label', v===0 ? '空きマス' : 'タイル '+v);
+    btn.onclick = function(){ moveTile(i); };
+    b.appendChild(btn);
+  });
+  document.getElementById('pz-moves').textContent = pz.moves;
+}
+function moveTile(i){
+  if(pz.solvedView) return;
+  var empty = pz.board.indexOf(0);
+  var er = Math.floor(empty/3), ec = empty%3, r = Math.floor(i/3), c = i%3;
+  if(Math.abs(er-r)+Math.abs(ec-c) !== 1) return;
+  pz.board[empty] = pz.board[i]; pz.board[i] = 0; pz.moves++;
+  if(!pz.started){ pz.started = true; startPzTimer(); }
+  renderPuzzle(); checkPuzzleWin();
+}
+function startPzTimer(){
+  clearInterval(pz.timer);
+  pz.timer = setInterval(function(){
+    pz.seconds++;
+    var m = Math.floor(pz.seconds/60), s = pz.seconds%60;
+    document.getElementById('pz-time').textContent = m+':'+String(s).padStart(2,'0');
+  }, 1000);
+}
+function checkPuzzleWin(){
+  var win = pz.board.every(function(v,i){ return v === (i===8 ? 0 : i+1); });
+  if(win && pz.moves>0){
+    clearInterval(pz.timer);
+    document.getElementById('pz-win').classList.add('show');
+    document.getElementById('pz-win-detail').textContent = pz.moves+'手 ・ '+document.getElementById('pz-time').textContent+' で完成';
+    if(pz.best===null || pz.moves < pz.best){ pz.best = pz.moves; document.getElementById('pz-best').textContent = pz.best+'手'; }
+  }
+}
+function shufflePuzzle(){
+  pz.board = [1,2,3,4,5,6,7,8,0]; pz.moves = 0; pz.seconds = 0; pz.started = false; pz.solvedView = false;
+  clearInterval(pz.timer);
+  document.getElementById('pz-time').textContent = '0:00';
+  document.getElementById('pz-win').classList.remove('show');
+  // solvable shuffle: random walk from solved state
+  for(var k=0;k<90;k++){
+    var empty = pz.board.indexOf(0), er = Math.floor(empty/3), ec = empty%3, opts=[];
+    if(er>0) opts.push(empty-3); if(er<2) opts.push(empty+3); if(ec>0) opts.push(empty-1); if(ec<2) opts.push(empty+1);
+    var pick = opts[Math.floor(Math.random()*opts.length)];
+    pz.board[empty] = pz.board[pick]; pz.board[pick] = 0;
+  }
+  if(pz.board.every(function(v,i){ return v===(i===8?0:i+1); })) shufflePuzzle(); else renderPuzzle();
+}
+function solveView(){
+  clearInterval(pz.timer); pz.solvedView = true;
+  pz.board = [1,2,3,4,5,6,7,8,0];
+  document.getElementById('pz-win').classList.remove('show');
+  renderPuzzle();
+}
+document.getElementById('pz-shuffle').addEventListener('click', shufflePuzzle);
+document.getElementById('pz-solve').addEventListener('click', solveView);
+renderPuzzle();
+
+/* ============ GAME 3 : REFLEX ============ */
+var rf = { score:0, combo:0, maxCombo:0, best:0, playing:false, timeLeft:30, spawnTimer:null, tickTimer:null, current:-1, isGold:false, hideTimer:null };
+var starSVG = function(gold){
+  var fill = gold ? '#f7c948' : '#e14d3a', stroke = gold ? '#b8770a' : '#8f2415';
+  return '<svg viewBox="0 0 100 100" aria-hidden="true"><polygon points="50,4 62,36 96,37 69,59 78,93 50,73 22,93 31,59 4,37 38,36" fill="'+fill+'" stroke="'+stroke+'" stroke-width="4" stroke-linejoin="round"/><circle cx="40" cy="50" r="4" fill="#1d1a15"/><circle cx="60" cy="50" r="4" fill="#1d1a15"/><path d="M38 63 Q50 71 62 63" stroke="#1d1a15" stroke-width="4" fill="none" stroke-linecap="round"/></svg>';
+};
+(function buildHoles(){
+  var b = document.getElementById('rf-board');
+  for(var i=0;i<9;i++){
+    var hole = document.createElement('div'); hole.className='hole';
+    var t = document.createElement('button'); t.className='target'; t.setAttribute('aria-label','星をタップ');
+    (function(idx, btn){
+      btn.onclick = function(ev){ ev.stopPropagation(); hitTarget(idx); };
+    })(i, t);
+    hole.appendChild(t); b.appendChild(hole);
+    hole.addEventListener('click', function(){ if(rf.playing){ rf.combo = 0; renderReflex(); } });
+  }
+})();
+function renderReflex(){
+  document.getElementById('rf-score').textContent = rf.score;
+  document.getElementById('rf-combo').textContent = '×'+rf.combo;
+  document.getElementById('rf-best').textContent = rf.best;
+  document.getElementById('rf-time').textContent = Math.max(0, rf.timeLeft).toFixed(1);
+  document.getElementById('rf-bar').style.width = Math.max(0, rf.timeLeft/30*100)+'%';
+}
+function clearTarget(){
+  document.querySelectorAll('.target').forEach(function(t){ t.classList.remove('show'); t.innerHTML=''; });
+  rf.current = -1;
+  if(rf.hideTimer){ clearTimeout(rf.hideTimer); rf.hideTimer = null; }
+}
+function spawnTarget(){
+  if(!rf.playing) return;
+  clearTarget();
+  var idx; do { idx = Math.floor(Math.random()*9); } while(idx === rf.current);
+  rf.current = idx; rf.isGold = Math.random() < 0.15;
+  var t = document.querySelectorAll('.target')[idx];
+  t.innerHTML = starSVG(rf.isGold); t.classList.add('show');
+  var elapsed = 30 - rf.timeLeft;
+  var visible = Math.max(480, 950 - elapsed*16);
+  rf.hideTimer = setTimeout(function(){
+    if(rf.playing && rf.current === idx){ clearTarget(); rf.combo = 0; renderReflex(); spawnTarget(); }
+  }, visible);
+}
+function hitTarget(idx){
+  if(!rf.playing || idx !== rf.current) return;
+  rf.score += rf.isGold ? 3 : 1;
+  rf.combo++; if(rf.combo > rf.maxCombo) rf.maxCombo = rf.combo;
+  if(rf.combo>0 && rf.combo%10===0) rf.score += 2; // combo bonus
+  clearTarget(); renderReflex(); spawnTarget();
+}
+function startReflex(){
+  if(rf.playing) return;
+  rf.score = 0; rf.combo = 0; rf.maxCombo = 0; rf.timeLeft = 30; rf.playing = true;
+  document.getElementById('rf-result').classList.remove('show');
+  document.getElementById('rf-start').disabled = true;
+  document.getElementById('rf-start').textContent = 'プレイ中…';
+  renderReflex(); spawnTarget();
+  rf.tickTimer = setInterval(function(){
+    rf.timeLeft -= 0.1;
+    if(rf.timeLeft <= 0){ endReflex(); } else { renderReflex(); }
+  }, 100);
+}
+function endReflex(){
+  rf.playing = false; rf.timeLeft = 0;
+  clearInterval(rf.tickTimer); clearTarget(); renderReflex();
+  if(rf.score > rf.best) rf.best = rf.score;
+  renderReflex();
+  var rank = rf.score>=35 ? 'S' : rf.score>=28 ? 'A' : rf.score>=20 ? 'B' : 'C';
+  document.getElementById('rf-rank').textContent = rank;
+  document.getElementById('rf-result-text').textContent = 'スコア '+rf.score+'点 ・ 最大 '+rf.maxCombo+' コンボでした';
+  if(rf.score>=35) document.getElementById('rf-result-text').textContent = 'スコア '+rf.score+'点！ 反射神経バツグンです';
+  else if(rf.score<=10) document.getElementById('rf-result-text').textContent = 'スコア '+rf.score+'点。金色の星を狙うと伸びます';
+  document.getElementById('rf-result').classList.add('show');
+  var btn = document.getElementById('rf-start');
+  btn.disabled = false; btn.textContent = '↻ もう一度遊ぶ（30秒）';
+}
+document.getElementById('rf-start').addEventListener('click', startReflex);
+renderReflex();
+</script>
+</body>
+</html>
